@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:alpine # Use a specific version for consistency
+    container_name: task-list-db
+    restart: always # Restart the container if it crashes
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}" # Expose the port
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db_data:/var/lib/postgresql/data # Persist data across container restarts
+    healthcheck: # Add a healthcheck to ensure the database is ready
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data: # Named volume for persistent data storage
