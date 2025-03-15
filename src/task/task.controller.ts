@@ -3,12 +3,17 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
+  ParseIntPipe,
   Post,
   Put,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { Task } from './task.entity';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Controller('tasks')
 export class TaskController {
@@ -20,20 +25,27 @@ export class TaskController {
   }
 
   @Post()
-  async create(@Body() task: Partial<Task>): Promise<Task> {
-    return this.taskService.create(task);
+  @HttpCode(HttpStatus.CREATED) // Explicitly set 201 created status
+  async create(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
+    return this.taskService.create(createTaskDto);
   }
 
-  @Put('id')
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Task> {
+    return this.taskService.findOne(id);
+  }
+
+  @Put(':id')
   async update(
-    @Param('id') id: string,
-    @Body() task: Partial<Task>,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateTaskDto: UpdateTaskDto,
   ): Promise<Task> {
-    return this.taskService.update(parseInt(id), task);
+    return this.taskService.update(id, updateTaskDto);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<void> {
-    await this.taskService.remove(parseInt(id));
+  @HttpCode(HttpStatus.NO_CONTENT) // Explicitly set 204 No Content status
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.taskService.remove(id);
   }
 }
